@@ -1,0 +1,5 @@
+openai
+python-magic
+requests
+validators
+beautifulsoup4>=4.0

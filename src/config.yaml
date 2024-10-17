@@ -1,0 +1,3 @@
+api_key: <YOUR OPENAI API KEY HERE>
+model: gpt-4o-mini
+language: english

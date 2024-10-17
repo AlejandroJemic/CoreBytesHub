@@ -92,6 +92,7 @@ def sumarize_text(text):
         return None
 
 def generate_note_from_json(json):
+    config = u.read_config_file()
     prompt = f"""
     actuaras como un desarrollador fullstack senior
     que se esta preparando para entrevistas de trabajo
@@ -143,7 +144,7 @@ def generate_note_from_json(json):
     recuerda ser explicativo pero consiso
     enfocate mas en el trabajo del dia a dia que en la dialectica 
     considera no ser redundante, homite las repeticiones
-    todo debe ser en español
+    todo debe ser en idioma {config['language']}
     puedes aprovechar marckdonw para resaltar elementos y secciones
     recuerta tu objetivo es dar confianza y mostrar solidez desde el conosimiento tecnico(preferible) o la experiencia profecional(en segundo plano)
     no denes incluir etiquetas del tipo ```markdown

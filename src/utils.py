@@ -1,4 +1,5 @@
 import os
+import re
 import magic
 import requests
 import validators
@@ -46,6 +47,12 @@ def check_path_or_url(input_string):
 
 
 
+def replase_json(destination_path, json_output):
+    print("Replasing JSON file...")
+    if  os.path.exists(destination_path):
+        os.remove(destination_path)
+    with open(destination_path, 'w') as f:
+        json.dump(json_output, f, indent=2)
 
 def update_or_create_json(destination_path, json_output):
     print("Updating or creating JSON file...")
@@ -89,3 +96,14 @@ def read_text_file(file_path):
             return f"Error reading file: {str(e)}"
     else:
         return f"'Error {file_path}' is not a text file."
+
+
+def sanitize_filename(filename):
+    try:
+        filename = filename.replace(' ', '_')
+        filename = re.sub(r'[\/\(\)\[\]\{\}\*\\|?:]', '-', filename)
+        return filename
+    except Exception as e:
+        print(f"Error sanitizing filename: '{filename}'. Error is:{str(e)}")
+        return filename
+    

@@ -24,19 +24,22 @@ def get_message_from_prompt(prompt):
         print("No choices received in the response.")
         return None
 
-def generate_json_from_text(text):
+def generate_json_from_text(text, relatedTo):
     print("Generating JSON from text...")
 
-    prompt = f"""
+    prompt = f"""k
+     {"acerca de " + relatedTo if relatedTo != "" else ""}
     Procesa el siguiente texto y genera un JSON estructurado con los siguientes campos:
     - name: Nombre del tema
     - description: Descripción brebe del tema
     - id: ID secuencial en el formato [topic-NNN]
+    - state: allways 'pending'
     - subTopics: Lista de subtemas, donde cada subtema tiene:
         - name: Nombre del sub tema
         - description: Descripción del subtema
         - id: ID secuencial en el formato [topic-NNN-subtopic-NNN]
         - isSub: true si es un subtema
+        - state: allways 'pending'
     inicio del texto:
     {text}
     :fin de del texto
@@ -59,10 +62,11 @@ def generate_json_from_text(text):
         print("Error en la API:", e)
         return None
     
-def sumarize_text(text):
+def sumarize_text(text, relatedTo):
     print("Summarizing text...")
 
     prompt= f"""
+     {"acerca de " + relatedTo if relatedTo != "" else ""}
     Procesa el siguiente texto y extrae un temario estructurado en formato de texto plano. El temario debe cumplir con las siguientes características:
     1. Cada tema debe incluir:
     - Un título o palabra clave principal del tema.
@@ -91,29 +95,47 @@ def sumarize_text(text):
         print("Error en la API:", e)
         return None
 
-def generate_note_from_json(json):
+def generate_note_from_json(json, relatedTo):
     config = u.read_config_file()
+
+    if relatedTo != "":
+        encabesado = f"""
+        ESTE ES EL CONCEPTO PRINCIPAL QUE DEBE GUIAR TODO LO QUE ESCRIBAS A CONTINUACION
+        TU PRICIPAL OBJETIVO ES CUBIRIR APROPIADAMENTE ESTE CONCEPTO:
+        {relatedTo}
+        """
     prompt = f"""
+    {"OBJETIVO: " + encabesado if relatedTo != "" else ""}
     actuaras como un desarrollador fullstack senior
     que se esta preparando para entrevistas de trabajo
     tu objetivo es dar confianza y mostrar solidez desde el conosimiento tecnico(preferible) o la experiencia profecional(en segundo plano)
-    reciviras un text json con el siguiente formato:
+    recibiras un texto json con el siguiente formato:
     <inicio formato>
     - name: Nombre del tema
     - description: Descripción brebe del tema
     - id: ID secuencial en el formato [topic-NNN]
     <fin formato>
-    tu mision sera proveer informacion clara y consisa sobre el tema para prepararme ante una eventual enrtevista tecnica
+    tu mision sera proveer informacion clara y consisa sobre el tema para prepararme a una enrtevista tecnica.
     para el tema, tecnologia o consepto deveras dar una ficha de estudio (en formato marckdown) con el siguiente formato:
     <inicio ficha>
-     # name: nombre del tema
+    # name: nombre del tema
+    ## god-to-know: lo mas importante que debo saber del tema
     ## descrption: un descripcin clara pero consisa del tema en cuestion
     ## importance: definir las ventajas de porque se emplea o cuando es mas recomendable aplicarlo, puede ser un punteo o lista brebe, nunca mas de 5
     ## keywords: una lista separada por comas de palabras clave fundamentales en una conversacion sobre este tema, cosas que deveria manejar bien
-    ## god-to-know: lo mas importante que debo saber del tema
-    ## questions-anwers: una lista de 3 a 7 perguntas claves que un reclutador podria buscar o querer validar o determinar mi nivel, recuerda que soy un senior. 
-        cada prengta tendra su corespondiente respuesta, explicativa pero consisa, si puedes incluye algn ejemplo de codigo o configuracion pertinente en cada pregunta
+    ## first steps: primeros pasos, configuracion basica o como iniciar o instalar con ejemplos, debe ser ago completo que funcione
+    ## ejemplo completo de configuracion o codificacion:
+        aqui debes generar un ejemplo funcional y completo del tema principal que se esta estudiando, algo que al copiarlo funcione.
+        si requiere barios pasos debes explicarlos apropiadamente
 
+    ## code examples: 
+        una lista de ejemplos tecnicos adicionale,  de codigos o configuraciones, que complemente el ejemplo anterior, no debes repetir lo mismo de antes,  
+        debes hacer enfacies en incluir tantos ejemplos practicos como sea pertinente. idealmente que sigan el orden trabajo, incluye ejemplos abanzados, 
+        simempre deben ser mas de 3
+        
+    ## questions-anwers: una lista de 3 a 7 perguntas claves que un reclutador podria buscar o querer validar o determinar mi nivel, recuerda que soy un senior. 
+        las preguntas no den ser naive, deben ser tecnicas enfocadas a ver conosiminetos practios de uso, programacion, o configuraciones
+        cada prengta tendra su corespondiente respuesta, explicativa pero consisa,  incluye un ejemplo de codigo o configuracion pertinente en cada pregunta
     -si es un tema:
         deberas incluir cuando sea pertinente
         un punteo detallado detallado de los conseptos claves, nunca mas de 10, sobre todo desde el punto de vista de una conversacion
@@ -129,6 +151,8 @@ def generate_note_from_json(json):
         un punteo detallado detallado de los conseptos claves, nunca mas de 10, sobre todo desde el punto de vista de una conversacion
         si aplica algo referente a las keywords que incluiste anteriormente
 
+    ## more concept: 
+    una lista de conseptos mas avanzados o subsiguientes que se pueden aplicar,aqui tambien debes dar una lista ejemplos tecnicos para cada item en la lista de modo que pued aplicarlo de la mejor manera en la vida real o el trabajo del dia a dia
     <fin ficha>
 
     aqui esta el json del que tienes que hacer la <ficha>:

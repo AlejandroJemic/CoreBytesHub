@@ -10,6 +10,19 @@ destination_path = os.path.join(destination_folder, destination_file)
 if not os.path.exists(destination_folder):
     os.makedirs(destination_folder)
 
+def get_subjects(entry):
+    subjects = []
+    if os.path.isfile(entry):          # check is is a validad filepath
+        if os.path.exists(entry):
+            with open(entry, 'r') as f:
+                  subjects = [line.strip() for line in f]
+        else:
+            return ('file',f"'Error: {entry}' is a valid filepath but does not exist.")
+    else:
+        subjects.append(entry)
+
+    return subjects
+
 def get_text_from_entry(entry, relattedTo = ""):
     (type,message) = u.check_path_or_url(entry)
     if message is not None:
@@ -46,19 +59,44 @@ def get_text_from_entry(entry, relattedTo = ""):
                 return entry
 
 def generate_note(index, jsonTopic, relattedTo, destination_folder, parentName=""):
+    
     print(f"Generating note for {jsonTopic['name']}")
     if parentName != "":
         parentName = u.sanitize_filename(parentName)
     topicName = parentName + "-" + jsonTopic["name"].upper() if parentName != "" else jsonTopic["name"].upper()
     topicName = u.sanitize_filename(topicName)
-    noteFileName = str(index).zfill(2) + "-" + f"{topicName}.md"
-    noteDirPath = os.path.join(destination_folder, topicName if not parentName else parentName)
+    noteFileName = index + "-" + f"{topicName}.md"
+    noteDirPath = os.path.join(destination_folder, index + "-" + topicName if not parentName else index + "-" + parentName)
     noteFilePath = os.path.join(noteDirPath, noteFileName)
     if os.path.exists(noteFilePath):
         print(f"Skipping {noteFileName} because it already exists")
         return
     print(f"anotating {jsonTopic['name']}")
     noteText = llm.generate_note_from_json(jsonTopic, relattedTo)
+    if noteText is None:
+        return
+    else:
+        if not os.path.exists(noteDirPath):
+            os.makedirs(noteDirPath)
+        print(f"Creating {noteFileName}")
+        with open(noteFilePath, 'w',encoding='utf-8') as f:
+            f.write(noteText)
+
+
+def explain_subjetc(index, subject, destination_folder):
+    
+    print(f"Generating subject for {subject}")
+   
+    topicName = subject.replace("|", "-").upper()[0:50]
+    topicName = u.sanitize_filename(topicName)
+    noteFileName = index + "-" + f"{topicName}.md"
+    noteDirPath = os.path.join(destination_folder)
+    noteFilePath = os.path.join(noteDirPath, noteFileName)
+    if os.path.exists(noteFilePath):
+        print(f"Skipping {noteFileName} because it already exists")
+        return
+    print(f"anotating {subject}")
+    noteText = llm.generate_note_from_text(subject)
     if noteText is None:
         return
     else:
@@ -103,7 +141,7 @@ def process_pending_topics(relattedTo=""):
                 "name": topic["name"],
                 "description": topic["description"],
             }
-            generate_note(index, data, relattedTo, destination_folder)
+            generate_note(str(index).zfill(2), data, relattedTo, destination_folder)
             topic["state"] = "done"
 
             if topic["subTopics"] is  None:
@@ -111,11 +149,11 @@ def process_pending_topics(relattedTo=""):
             else:
                 print("Subtopics found for: ", topic["name"])
 
+                subIndex = 0
                 for subtopic in topic["subTopics"]:
-                    index += 1
+                    subIndex += 1
                     try:
-                        generate_note(index, subtopic, relattedTo, destination_folder, topic["name"].upper())
-
+                        generate_note(f"{str(index).zfill(2)}-{str(subIndex).zfill(2)}", subtopic, relattedTo, destination_folder, topic["name"].upper() + "-")
                         subtopic["state"] = "done"
                        
                     except Exception as e:
@@ -140,23 +178,34 @@ def handdle_generation():
     relatedTo = input("Related to(some technology or anotation or empty): ")
     generate_knowledge(entry,relatedTo)
 
+def handle_subjects():
+    print_header()
+    entry = input("Enter url, file path or text: ")
+    index = input("Start Index (or Enter for 0): ") 
+    count = int(index)  if (index != "" and int(index) > 0) else 0
+    for subject in get_subjects(entry):
+        count += 1
+        explain_subjetc(str(count).zfill(2), subject, destination_folder)
+
 def main():
     print_header()
     while True:
         print("[K] Generate Knowledge")
         print("[P] Process pending topics")
+        print("[S] Explain subject")
         print("[E] Exit")
         selection = input("Select an option: ")
         if selection.lower() == "k":
             handdle_generation()
         elif selection.lower() == "p":
             process_pending_topics()
+        elif selection.lower() == "s":
+            handle_subjects()
         elif selection.lower() == "e":
             print("EXIT 0")
             break
         else:
             print("Invalid option")
-           
             continue
 
 if __name__ == "__main__":

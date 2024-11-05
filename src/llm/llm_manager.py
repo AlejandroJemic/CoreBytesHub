@@ -6,12 +6,12 @@ import src.utils as u
 
 
 def get_message_from_prompt(prompt):
-    print("Getting message from prompt" + prompt[0:150] + "...")
     config = u.read_config_file()
     if config is None:
         return None
     api_key = config['api_key']
     model = config['model']
+    print("Getting message from prompt" + prompt[0:150] + "...")
     client = openai.OpenAI(api_key=api_key)
     response = client.chat.completions.create(
         model=model,
@@ -184,3 +184,57 @@ def generate_note_from_json(json, relatedTo):
     except openai.error.APIError as e:
         print("Error en la API:", e)
         return None
+
+def generate_note_from_text(text):
+    prompt = f"""explica el/los siguiente/s temas 
+    el/los tema/s esta/n dividido/s en categorias y temas espesificoscon el siguinete formato:
+    categoria|tema
+    los temas son:
+    {text}
+    :fin de los temas
+    para cada uno proporciona:
+    - una explicacion clara, completa y consisa,
+    - aspectos principales
+    - un ejemplo completo y funconal detallado y comentado que funcione, debe ser un buen ejemplo, en calidad y extension
+    - si hace o es deseableagregar falta algunos ejemplos complementarios o adicionales para ampliar el tema, tambien de buena calidad y extension
+    - si cabe indica los posibles uso s y aplicaciones
+    - si cabe genera algunas preguntas y repuestas enfocadas a una entevista tecnica
+    es fundamental que expliques el tema, los ejemplos y las preguntas conn relacion a la categoria que le corespond
+    """
+    try:
+        note = get_message_from_prompt(prompt)
+        if note is None:
+            return None
+        return note
+    except Exception as e:
+        print("Error al procesar el json:", e)
+        return None
+    except openai.error.APIError as e:
+        print("Error en la API:", e)
+        return None
+    
+
+
+
+# genera un roadmap para el o los siguientes temas
+# para un programador de junior a senior
+# considera dividirlo en los siguientes niveles
+# indispensable
+# basico 
+# intermedio
+# abanzado
+# posibles espocializaciones
+# la salida debeser consisa siguendo el siguiente formato
+# nivel
+# temas	
+# lista de subtemas: por cada tema genera una lista con los sub temas corespondientes
+# descripcion: cada item en la lista de los sudtemas debe tener su corespondiente descripioc o comentario de lo que engloba/incluye  (maximo 300ch)
+# considera usar el enfoque del 80-20 enfocandote en el 20% de temas que aportan el 80% de valor o importancia en aprnder o saver los emas que inclurias
+# pero no lo hagas demaciado acortado tampoco, manten el balance en la cantidad de temas
+# el/los temas son:
+# ademas considera generar un anexo incluyendo temas que se emplean en el dia a dia programando o configurando y que son de usao comun
+# sigue el mismo formato en la salida
+# --------------------------------------------------------------
+# evalua tu respuesta anterior, creees que fue demaciado corta, escueta o consisa?
+# crees que hay otros temas de alto valor qu edeviste haber mencionado?
+# si es as igener aun anexo incluyendolos empleando el mismo formato

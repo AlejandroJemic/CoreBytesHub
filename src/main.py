@@ -114,6 +114,25 @@ def explain_subjetc(index, subject, destination_folder):
         with open(noteFilePath, 'w',encoding='utf-8') as f:
             f.write(noteText)
 
+def generate_knowledge(entry, relattedTo):
+    input_text = ""
+    
+    input_text = get_text_from_entry(entry, relattedTo)
+
+    print("generating JSON...")
+    # Generar JSONk
+    json_output = llm.generate_json_from_text(input_text, relattedTo)
+    if "topics" not in json_output:
+        json_output = {"topics":json_output}
+
+    print("JSON generated:")
+    print(json.dumps(json_output, indent=2))
+ 
+    u.update_or_create_json(destination_path, json_output)
+    print(f"JSON saved at {destination_file}")
+
+    process_pending_topics(relattedTo)
+
 def process_pending_topics(relattedTo=""):
     # Cargar temas desde knowledge_map.json
     with open(destination_path, 'r') as f:

@@ -187,7 +187,7 @@ def generate_note_from_json(json, relatedTo):
 
 def generate_note_from_text(text):
     prompt = f"""explica el/los siguiente/s temas 
-    el/los tema/s esta/n dividido/s en categorias y temas espesificoscon el siguinete formato:
+    el/los tema/s esta/n dividido/s en categorias y temas espesificos con el siguinete formato:
     categoria|tema
     los temas son:
     {text}
@@ -196,10 +196,10 @@ def generate_note_from_text(text):
     - una explicacion clara, completa y consisa,
     - aspectos principales
     - un ejemplo completo y funconal detallado y comentado que funcione, debe ser un buen ejemplo, en calidad y extension
-    - si hace o es deseableagregar falta algunos ejemplos complementarios o adicionales para ampliar el tema, tambien de buena calidad y extension
+    - si hace falta alguno es deseable agregar algunos ejemplos complementarios o adicionales para ampliar el tema, tambien de buena calidad y extension
     - si cabe indica los posibles uso s y aplicaciones
     - si cabe genera algunas preguntas y repuestas enfocadas a una entevista tecnica
-    es fundamental que expliques el tema, los ejemplos y las preguntas conn relacion a la categoria que le corespond
+    es fundamental que expliques el tema, los ejemplos y las preguntas conn relacion a la categoria que le corresponde
     """
     try:
         note = get_message_from_prompt(prompt)
